@@ -1,0 +1,13 @@
+streamlit
+torch
+torchvision
+ultralytics
+pillow
+opencv-python
+numpy
+pytesseract
+google-generativeai
+langchain-google-genai
+langchain-core-messages
+langchain
+pyttsx3
