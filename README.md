@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # **Tools and Libraries Used in Our Project**
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -58,9 +57,9 @@ This project is designed to assist visually impaired individuals in understandin
       - **Scene Analysis**: Displays descriptive text.  
       - **Text Extraction and Speech**: Reads text aloud.  
       - **Object Detection**: Highlights detected objects for better context.
-      - **Personalized assistance**: Helps in daily task.
+      - **Personalized assistance**: Helps in daily tasks.
 
----
+--- 
 
 ## Requirements  
 
@@ -73,7 +72,7 @@ To run this project locally, install the following:
 - OpenCV (`pip install opencv-python`)  
 - PyTesseract (`pip install pytesseract`)  
 
----
+---  
 
 ## Installation and Setup  
 
@@ -81,34 +80,3 @@ To run this project locally, install the following:
    ```bash  
    git clone https://github.com/Angad143/Building-AI-Powered-Solution-for-Assisting-Visually-Impaired-Individuals.git
    cd AI-Visually-Impaired-Solution  
-   ```  
-
-2. **Install Dependencies**  
-   ```bash  
-   pip install -r requirements.txt  
-   ```  
-
-3. **Set Up API Keys**  
-   - Add your API key for Google Generative AI in your projects.  
-
-4. **Run the Application**  
-   ```bash  
-   streamlit run app.py  
-   ```  
-
-5. **Usage**  
-   - Upload an image to the application.  
-   - View the scene description, listen to text-to-speech output, and see detected objects.  
-
----
-
-## Conclusion  
-
-This project demonstrates how AI can transform lives by assisting visually impaired individuals with advanced capabilities. By integrating state-of-the-art AI technologies, it provides a practical solution for real-world challenges.  
-
-**Video demonstration:** [Project Demo Video](https://github.com/Angad143/Building-AI-Powered-Solution-for-Assisting-Visually-Impaired-Individuals/tree/main/sample%20projects%20demo) 
-
-=======
-# VISIONEYE
-AI-Powered Vision Assistant | Enhancing accessibility through technology
->>>>>>> 69d94a4e7299120a62eb7caf4f04d55acb729f0b
