@@ -10,7 +10,6 @@ numpy
 pytesseract
 google-generativeai
 langchain-google-genai
-langchain-core-messages
 langchain
 pyttsx3
 streamlit_folium
