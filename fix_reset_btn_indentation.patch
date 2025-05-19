@@ -1,0 +1,23 @@
+@@ -640,10 +640,14 @@
+-    col1, col2, col3 = st.columns([1, 2, 1])
+-        with col2:
+-            if st.button("Reset & Upload New Image", key="reset_btn_2"):
+-                # Clear the session state
+-                if 'image' in st.session_state:
+-                    del st.session_state.image
+-                if 'image_path' in st.session_state:
+-                    del st.session_state.image_path
+-                if 'using_demo' in st.session_state:
+-                    del st.session_state.using_demo
+-                st.rerun()
++    col1, col2, col3 = st.columns([1, 2, 1])
++    with col2:
++        if st.button("Reset & Upload New Image", key="reset_btn_2"):
++            # Clear the session state
++            if 'image' in st.session_state:
++                del st.session_state.image
++            if 'image_path' in st.session_state:
++                del st.session_state.image_path
++            if 'using_demo' in st.session_state:
++                del st.session_state.using_demo
++            st.rerun()

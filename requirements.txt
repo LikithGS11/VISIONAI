@@ -1,3 +1,5 @@
+#IN TERMINAL TYPES pip install -r requirements.txt TO INSTALL ALL THE LIBRARIES
+
 streamlit
 torch
 torchvision
@@ -11,3 +13,9 @@ langchain-google-genai
 langchain-core-messages
 langchain
 pyttsx3
+streamlit_folium
+folium
+geopy
+requests
+pyyaml
+tqdm
