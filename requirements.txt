@@ -1,4 +1,4 @@
-#IN TERMINAL TYPES pip install -r requirements.txt TO INSTALL ALL THE LIBRARIES
+# IN TERMINAL TYPE: pip install -r requirements.txt TO INSTALL ALL THE LIBRARIES
 
 streamlit
 torch
