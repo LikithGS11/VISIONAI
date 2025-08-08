@@ -67,6 +67,45 @@ VisionAI is an innovative solution designed to empower visually impaired individ
      - **Personalized Assistance**: Offers help in daily tasks like reading labels or recognizing objects.
 
 ---
+## 🧑‍💻 How to Download & Use VisionAI (Windows - Quick Steps)
+
+- ✅ **Step 1:** Download the project  
+  - Run this in Command Prompt (if Git is installed):  
+    ```bash
+    git clone https://github.com/LikithGS11/VISIONAI.git
+    cd VISIONAI
+    ```
+
+- 🧱 **Step 2:** Set up virtual environment  
+  ```bash
+  python -m venv venv
+  venv\Scripts\activate
+  ```
+
+- 📦 **Step 3:** Install required Python packages  
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+- 🔠 **Step 4:** Install Tesseract OCR  
+  - Download from: [Tesseract for Windows](https://github.com/UB-Mannheim/tesseract/wiki)  
+  - Note the install path (e.g., `C:\Program Files\Tesseract-OCR\tesseract.exe`)
+
+- 🔐 **Step 5:** Set up `.env` file  
+  - Copy `.env.example` to `.env`  
+  - Add your Google API key and Tesseract path like this:  
+    ```env
+    GOOGLE_API_KEY=your_api_key_here
+    TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+    ```
+
+- 🚀 **Step 6:** Run the app  
+  ```bash
+  streamlit run app.py
+  ```  
+  - Open [http://localhost:8501](http://localhost:8501) in your browser
+
+---
 
 ## **Requirements**
 
