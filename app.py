@@ -498,6 +498,11 @@ if page == "Home":
             <div class="feature-title">Personalized Assistance</div>
             <div class="feature-description">Tailored guidance based on the specific environment</div>
         </div>
+         <div class="feature-card">
+            <div class="feature-icon">🧭</div>
+            <div class="feature-title">Navigation Assistance</div>
+            <div class="feature-description">Provides turn-by-turn directions and location awareness</div>
+        </div>       
     </div>
     """, unsafe_allow_html=True)
     
