@@ -119,3 +119,10 @@ To run VisionAI locally, ensure the following dependencies are installed:
 - **PyTesseract**: `pip install pytesseract`
   
 ---
+
+## 🚀 Ready to Make a Difference?
+If this project inspired you or helped someone, leave a ⭐ on the repo, share it, or contribute!
+
+Together, we can make technology more inclusive. 💡🌍
+
+---
