@@ -1,0 +1,18 @@
+# VisionAI — Midnight Indigo theme
+# Base widget theming so native Streamlit components adopt the palette.
+# Fine-grained styling lives in utils/ui.py (inject_theme).
+
+[theme]
+base = "dark"
+primaryColor = "#6366F1"
+backgroundColor = "#0B0D12"
+secondaryBackgroundColor = "#12151C"
+textColor = "#E8EAF0"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+
+[server]
+maxUploadSize = 5

@@ -1,6 +1,15 @@
-import streamlit as st
-from PIL import Image
+import io
 import os
+
+import streamlit as st
+from dotenv import load_dotenv
+from PIL import Image
+from pathlib import Path
+
+# Load environment variables before importing modules that read them
+load_dotenv()
+
+from utils import ui
 from utils.scene_understanding import generate_scene_description
 from utils.text_to_speech import text_to_speech
 from utils.object_detection import YOLODetector
@@ -8,863 +17,384 @@ from utils.personalized_assistance import provide_personalized_assistance
 from utils.ocr_processing import extract_text_from_image
 from utils.realtime_detection import real_time_object_detection
 from utils.navigation_assistance import navigation_page
-import io
-from pathlib import Path
 
-# Set page configuration
-st.set_page_config(
-    page_title="VisionAI Assistant",
-    page_icon="👁️",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://www.example.com/help',
-        'Report a bug': "https://www.example.com/bug",
-        'About': "# VISIONAI Assistant\nHelping visually impaired individuals navigate their world."
-    }
-)
+# --------------------------------------------------------------------------- #
+# Bootstrap
+# --------------------------------------------------------------------------- #
+ui.configure_page()
+ui.inject_theme()
 
-# Custom CSS for improved design with new color scheme
-def load_css():
-    css = """
-    <style>
-        /* Main layout and theme */
-        .main {
-            background-color: #0a1929;
-            color: #e6f1ff;
-        }
-        
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        
-        /* Header styling */
-        .header {
-            padding: 1.5rem;
-            background: linear-gradient(90deg, #1a365d 0%, #2c5282 100%);
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-        }
-        
-        .app-title {
-            font-size: 2.8rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #63b3ed, #4299e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .app-description {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 0;
-            color: #a0aec0;
-        }
-        
-        /* Features display */
-        .features-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .feature-card {
-            background-color: #1e2a3a;
-            border-radius: 12px;
-            padding: 1.7rem;
-            flex: 1 1 200px;
-            min-width: 200px;
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            text-align: center;
-            border-left: 4px solid #4299e1;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.25);
-        }
-        
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .feature-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #63b3ed;
-        }
-        
-        .feature-description {
-            font-size: 0.95rem;
-            color: #a0aec0;
-        }
-        
-        /* Upload section */
-        .upload-section {
-            background-color: #1e2a3a;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-            border-left: 4px solid #4299e1;
-        }
-        
-        .upload-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #63b3ed;
-        }
-        
-        .upload-area {
-            border: 2px dashed #4299e1;
-            border-radius: 10px;
-            padding: 3rem 1rem;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .upload-area:hover {
-            border-color: #63b3ed;
-            background-color: rgba(66, 153, 225, 0.05);
-        }
-        
-        /* Analysis section */
-        .analysis-section {
-            background-color: #1e2a3a;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-            border-left: 4px solid #4299e1;
-        }
-        
-        /* Button styling */
-        .custom-button {
-            background: linear-gradient(90deg, #4299e1 0%, #63b3ed 100%);
-            color: white;
-            border: none;
-            border-radius: 24px;
-            padding: 0.7rem 1.7rem;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 0.7rem;
-        }
-        
-        .custom-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Results styling */
-        .result-container {
-            background-color: #2a4365;
-            border-radius: 10px;
-            padding: 1.7rem;
-            margin-top: 1.5rem;
-            border-left: 4px solid #63b3ed;
-        }
-        
-        .result-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #63b3ed;
-        }
-        
-        /* Footer styling */
-        .footer {
-            text-align: center;
-            padding: 1.5rem;
-            margin-top: 2.5rem;
-            opacity: 0.8;
-            font-size: 0.9rem;
-            background-color: #1a365d;
-            border-radius: 8px;
-            color: #a0aec0;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .features-container {
-                flex-direction: column;
-            }
-            
-            .feature-card {
-                width: 100%;
-            }
-            
-            .app-title {
-                font-size: 2rem;
-            }
-        }
-        
-        /* Tab styling */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 10px;
-        }
-
-        .stTabs [data-baseweb="tab"] {
-            height: 50px;
-            white-space: pre-wrap;
-            background-color: #2a4365;
-            border-radius: 8px 8px 0px 0px;
-            gap: 10px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            color: #a0aec0;
-        }
-
-        .stTabs [aria-selected="true"] {
-            background-color: #2c5282 !important;
-            border-bottom: 3px solid #63b3ed !important;
-            color: #e6f1ff !important;
-        }
-        
-        /* Spinner */
-        .stSpinner > div {
-            border-top-color: #63b3ed !important;
-        }
-        
-        /* Image display */
-        .uploaded-image-container {
-            padding: 1.3rem;
-            background-color: #2a4365;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Audio player */
-        .stAudio > div {
-            background-color: #2a4365;
-            border-radius: 10px;
-        }
-        
-        /* Notification styling */
-        .success-notification {
-            padding: 1.2rem;
-            background-color: rgba(56, 161, 105, 0.2);
-            border-left: 5px solid #38a169;
-            border-radius: 6px;
-            margin: 1.2rem 0;
-            color: #c6f6d5;
-        }
-        
-        .warning-notification {
-            padding: 1.2rem;
-            background-color: rgba(236, 201, 75, 0.2);
-            border-left: 5px solid #ecc94b;
-            border-radius: 6px;
-            margin: 1.2rem 0;
-            color: #fefcbf;
-        }
-        
-        .error-notification {
-            padding: 1.2rem;
-            background-color: rgba(245, 101, 101, 0.2);
-            border-left: 5px solid #f56565;
-            border-radius: 6px;
-            margin: 1.2rem 0;
-            color: #fed7d7;
-        }
-        
-        /* Improved sidebar styling */
-        .css-1d391kg, .css-1cypcdb, .css-1868j9k {
-            background-color: #1a365d;
-        }
-        
-        .css-pkbazv {
-            color: #63b3ed;
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .sidebar .sidebar-content {
-            background-color: #1a365d;
-        }
-        
-        .css-hxt7ib {  /* Navigation container */
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        
-        /* Radio buttons in sidebar */
-        .st-cb, .st-bq, .st-az, .st-ae, .st-af, .st-ag, .st-ah, .st-ai, .st-aj {
-            background-color: #2c5282;
-            color: #e6f1ff;
-        }
-        
-        /* Expander styling */
-        .streamlit-expanderHeader {
-            background-color: #2a4365;
-            border-radius: 8px;
-            color: #63b3ed;
-            padding: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .streamlit-expanderContent {
-            background-color: #1e2a3a;
-            border-radius: 0 0 8px 8px;
-            padding: 1rem;
-            color: #a0aec0;
-        }
-        
-        /* Divider in sidebar */
-        hr {
-            border-color: #4299e1;
-            margin: 1.5rem 0;
-        }
-        
-        /* Caption in sidebar */
-        .css-1ydqiqk {
-            color: #a0aec0;
-            font-size: 0.85rem;
-        }
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
-# Load the custom CSS
-load_css()
-
-# Create directories if they don't exist
 os.makedirs("images", exist_ok=True)
 os.makedirs("audio", exist_ok=True)
 
-# Initialize session states
-if 'detection_running' not in st.session_state:
+if "detection_running" not in st.session_state:
     st.session_state.detection_running = False
 
-# Instantiate YOLODetector
-detector = YOLODetector()
+# Handle programmatic navigation requested from CTA buttons (set before the
+# nav widget is instantiated, which is the only time it may be modified).
+NAV = {
+    "Home": "🏠  Home",
+    "Image Analysis": "🖼️  Image Analysis",
+    "Real-Time Camera": "📷  Real-Time Camera",
+    "Navigation Assistance": "🧭  Navigation Assistance",
+}
+NAV_INV = {v: k for k, v in NAV.items()}
+if "_goto" in st.session_state:
+    st.session_state.nav_choice = NAV[st.session_state.pop("_goto")]
 
-# --- Sidebar Navigation ---
+
+def go_to(page: str) -> None:
+    st.session_state._goto = page
+    st.rerun()
+
+
+@st.cache_resource(show_spinner=False)
+def get_detector() -> YOLODetector:
+    return YOLODetector()
+
+
+# --------------------------------------------------------------------------- #
+# Sidebar
+# --------------------------------------------------------------------------- #
 with st.sidebar:
-    st.image("images/logo.jpeg", width=220, caption="VisionAI")
-    st.title("VisionAI")
-    
-    # --- Improved Navigation ---
-    st.markdown("""
-    <style>
-        .custom-radio label {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #63b3ed !important;
-            padding: 0.7rem 1rem;
-            border-radius: 8px;
-            background: linear-gradient(90deg, #1a365d 0%, #2c5282 100%);
-            margin-bottom: 0.5rem;
-            transition: background 0.2s;
-        }
-        .custom-radio input[type="radio"]:checked + label {
-            background: linear-gradient(90deg, #4299e1 0%, #63b3ed 100%);
-            color: #e6f1ff !important;
-            box-shadow: 0 2px 8px rgba(66,153,225,0.15);
-        }
-        .custom-radio input[type="radio"] {
-            accent-color: #63b3ed;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # Custom icons for navigation
-    nav_options = {
-        "Home": "🏠 Home",
-        "Image Analysis": "🖼️ Image Analysis",
-        "Real-Time Camera": "📷 Real-Time Camera",
-        "Navigation Assistance": "🧭 Navigation Assistance"
-    }
-    nav_labels = list(nav_options.values())
-    nav_keys = list(nav_options.keys())
-
-    # Use radio for navigation with custom labels
-    page_idx = st.radio(
-        "Navigation",
-        nav_labels,
-        index=0,
-        key="nav_radio"
+    logo = Path("images/logo.jpeg")
+    if logo.exists():
+        st.image(str(logo), use_container_width=True)
+    st.markdown(
+        "<div style='font-family:Sora,sans-serif;font-weight:700;font-size:1.35rem;"
+        "margin:.6rem 0 .2rem;'>VisionAI</div>"
+        "<div style='color:#6B7280;font-size:.82rem;margin-bottom:1rem;'>"
+        "Assistive Vision Intelligence</div>",
+        unsafe_allow_html=True,
     )
-    # Map back to page key
-    page = nav_keys[nav_labels.index(page_idx)]
-    
-    st.divider()
-    
-    # Help section
-    st.subheader("Help & Information")
-    
-    with st.expander("How to Use This App"):
-        st.write("""
-        1. **Upload an image** on the Image Analysis page
-        2. **Select a feature** from the tabs to analyze your image
-        3. **View the results** and listen to audio descriptions
-        4. Or use the **Real-Time Camera** for live object detection
-        """)
-    
-    with st.expander("Features Guide"):
-        st.write("""
-        - **Scene Understanding**: Detailed scene descriptions
-        - **Text-to-Speech**: Convert text in images to audio
-        - **Object Detection**: Identify objects & obstacles
-        - **Personalized Assistance**: Context-specific guidance
-        - **Real-Time Camera**: Live object detection with voice feedback
-        - **Navigation Assistance**: Help navigating through various locations
-        """)
-    
-    with st.expander("Accessibility Tips"):
-        st.write("""
-        - Use **Tab** + **Enter** for keyboard navigation
-        - All audio can be **downloaded** for offline listening
-        - Results can be **expanded/collapsed** as needed
-        - Compatible with **screen readers**
-        """)
 
-    with st.expander("About the Team"):
-        st.write("""
-        This application was developed by:
-        
-        - **LIKITH G S**
-        - **DAYANA G S**
-        - **MANISHA KOLI**
-        - **ANANYA V**
-        """)
-    
+    page_label = st.radio(
+        "Navigation",
+        list(NAV.values()),
+        key="nav_choice",
+        label_visibility="collapsed",
+    )
+    page = NAV_INV[page_label]
+
+    st.divider()
+    st.markdown(
+        "<div style='color:#9BA3B4;font-weight:600;font-size:.8rem;letter-spacing:.08em;"
+        "text-transform:uppercase;margin-bottom:.4rem;'>Help &amp; Info</div>",
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("How to use this app"):
+        st.write(
+            "1. **Upload an image** on the Image Analysis page\n"
+            "2. **Pick a feature** tab to analyze it\n"
+            "3. **Read or listen** to the results\n"
+            "4. Or try the **Real-Time Camera** for live detection"
+        )
+    with st.expander("Features guide"):
+        st.write(
+            "- **Scene Understanding** — detailed scene descriptions\n"
+            "- **Text-to-Speech** — read text from images aloud\n"
+            "- **Object Detection** — spot objects & obstacles\n"
+            "- **Personalized Assistance** — context-aware guidance\n"
+            "- **Navigation** — routes & location awareness"
+        )
+    with st.expander("Accessibility"):
+        st.write(
+            "- Use **Tab + Enter** for keyboard navigation\n"
+            "- All audio can be **downloaded** for offline use\n"
+            "- Fully **screen-reader** compatible"
+        )
+    with st.expander("The team"):
+        st.write("**Likith G S** · **Dayana G S** · **Manisha Koli** · **Ananya V**")
+
     st.divider()
     st.caption("© 2025 VisionAI Assistant")
-    st.caption("Enhancing accessibility through technology")
 
-# --- Main Application Logic ---
-if page == "Home":
-    # Header section
-    st.markdown("""
-    <div class="header">
-        <h1 class="app-title">VisionAI Assistant</h1>
-        <p class="app-description">Enhancing everyday experiences for visually impaired individuals through artificial intelligence</p>
-    </div>
-    """, unsafe_allow_html=True)
 
-    # Welcome Message
-    st.markdown("""
-    ## Welcome to VisionAI
-    
-    VisionAI is an advanced assistive technology designed to help visually impaired individuals navigate and understand their surroundings with greater confidence and independence.
-    
-    ### Our Mission
-    
-    To leverage cutting-edge AI technologies to bridge the visual gap and provide real-time information about the surrounding environment, text recognition, and personalized guidance.
-    
-    ### How It Works
-    
-    Select "Image Analysis" from the sidebar to upload an image and analyze it, or choose "Real-Time Camera" for live object detection with voice feedback.
-    """)
-    
-    # Features overview
-    st.markdown("""
-    <div class="features-container">
-        <div class="feature-card">
-            <div class="feature-icon">👁️</div>
-            <div class="feature-title">Scene Understanding</div>
-            <div class="feature-description">Detailed descriptions of surroundings to provide spatial awareness</div>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🔊</div>
-            <div class="feature-title">Text to Speech</div>
-            <div class="feature-description">Converts written text from images into clear spoken words</div>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🚧</div>
-            <div class="feature-title">Object Detection</div>
-            <div class="feature-description">Identifies objects and potential obstacles in the path</div>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon">🤝</div>
-            <div class="feature-title">Personalized Assistance</div>
-            <div class="feature-description">Tailored guidance based on the specific environment</div>
-        </div>
-         <div class="feature-card">
-            <div class="feature-icon">🧭</div>
-            <div class="feature-title">Navigation Assistance</div>
-            <div class="feature-description">Provides turn-by-turn directions and location awareness</div>
-        </div>       
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Call to action
-    st.markdown("""
-    <div class="analysis-section">
-    <h2 style="color: #63b3ed;">Getting Started</h2>
-    <p>To begin using VisionAI, navigate to the "Image Analysis" section from the sidebar menu to upload an image for processing, or try the "Real-Time Camera" feature for live detection.</p>
-    </div>
-    """, unsafe_allow_html=True)
+# --------------------------------------------------------------------------- #
+# Pages
+# --------------------------------------------------------------------------- #
+def render_home() -> None:
+    ui.hero(
+        title="See the world, differently.",
+        subtitle="VisionAI turns any image or live camera feed into clear, spoken "
+        "understanding — scene descriptions, text, objects, and guidance — built to help "
+        "visually impaired people move through the world with confidence.",
+        eyebrow="Assistive Vision Intelligence",
+    )
 
-elif page == "Navigation Assistance":
-    navigation_page()    
+    ui.stat_row(
+        [
+            {"value": "5", "label": "AI-powered features"},
+            {"value": "Real-time", "label": "Live camera detection"},
+            {"value": "Voice-first", "label": "Every result spoken aloud"},
+            {"value": "On-device", "label": "Camera stays private"},
+        ]
+    )
 
-elif page == "Image Analysis":
-    # Header section
-    st.markdown("""
-    <div class="header">
-        <h1 class="app-title">Image Analysis</h1>
-        <p class="app-description">Upload an image to analyze and receive detailed information through various AI features</p>
-    </div>
-    """, unsafe_allow_html=True)
+    ui.section_header("What VisionAI can do", "Purpose-built tools for everyday independence", icon="✨")
+    ui.feature_grid(
+        [
+            {"icon": "👁️", "title": "Scene Understanding", "desc": "Rich, natural descriptions of what's in front of you for instant spatial awareness."},
+            {"icon": "🔊", "title": "Text to Speech", "desc": "Reads printed text from images aloud — labels, signs, documents and more."},
+            {"icon": "🚧", "title": "Object Detection", "desc": "Identifies objects and potential obstacles, with their positions in the frame."},
+            {"icon": "🤝", "title": "Personalized Assistance", "desc": "Context-aware guidance tailored to what the camera actually sees."},
+            {"icon": "🧭", "title": "Navigation", "desc": "Location awareness and walking routes to help you reach your destination."},
+        ]
+    )
 
-    # Upload section
-    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
-    st.markdown('<h2 class="upload-header">Upload an Image</h2>', unsafe_allow_html=True)
-    st.markdown('<p>Please upload an image (Max 5MB) to explore our features!</p>', unsafe_allow_html=True)
+    ui.section_header("Get started", "Jump straight into a tool", icon="🚀")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        if st.button("🖼️  Analyze an Image", type="primary", use_container_width=True):
+            go_to("Image Analysis")
+    with c2:
+        if st.button("📷  Live Camera", use_container_width=True):
+            go_to("Real-Time Camera")
+    with c3:
+        if st.button("🧭  Navigate", use_container_width=True):
+            go_to("Navigation Assistance")
 
-    # Create columns for upload area and demo button
-    col1, col2 = st.columns([3, 1])
 
-    with col1:
-        uploaded_image = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+def render_image_analysis() -> None:
+    ui.hero(
+        title="Image Analysis",
+        subtitle="Upload a photo and explore it through five AI lenses — every result can be "
+        "read aloud.",
+        eyebrow="Upload · Analyze · Listen",
+    )
 
-    with col2:
-        if st.button("Try Demo Image", key="demo_btn", help="Use a sample image to test the features"):
-            # Path to demo image
-            demo_image_path = Path(r"images/ATSFHIGLVLE.jpg")
-            
-            # Check if demo image exists
-            if demo_image_path.exists():
-                # Open the demo image
-                image = Image.open(demo_image_path)
-                
-                # Set the demo image as the current image in session state
-                if 'image' not in st.session_state:
+    # ---- Upload zone ----
+    if not ("image" in st.session_state):
+        with st.container(border=True):
+            ui.feature_intro("📤", "Upload an image", "JPG, JPEG or PNG · up to 5 MB")
+            up_col, demo_col = st.columns([3, 1])
+            with up_col:
+                uploaded = st.file_uploader(
+                    "Upload", type=["jpg", "jpeg", "png"], label_visibility="collapsed"
+                )
+            with demo_col:
+                st.write("")
+                if st.button("✨  Try a demo", use_container_width=True):
+                    demo = Path("images/ATSFHIGLVLE.jpg")
+                    if demo.exists():
+                        st.session_state.image = Image.open(demo)
+                        st.session_state.image_path = str(demo)
+                        st.session_state.using_demo = True
+                        st.rerun()
+                    else:
+                        ui.notice("warning", "Demo unavailable.", "Please upload your own image.")
+
+            if uploaded is not None:
+                if uploaded.size <= 5 * 1024 * 1024:
+                    image = Image.open(uploaded)
+                    save_path = os.path.join("images", uploaded.name)
+                    image.save(save_path)
                     st.session_state.image = image
-                    st.session_state.image_path = str(demo_image_path)
-                    st.session_state.using_demo = True
+                    st.session_state.image_path = save_path
+                    st.session_state.using_demo = False
                     st.rerun()
-            else:
-                st.error("Demo image not found. Please upload your own image.")
+                else:
+                    ui.notice("error", "File too large.", "Please upload an image under 5 MB.")
+        return
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    # ---- Analysis workspace ----
+    image = st.session_state.image
+    preview_col, actions_col = st.columns([1, 1.35], gap="large")
 
-    # Check if image is uploaded or demo is used
-    if uploaded_image is not None or ('image' in st.session_state and st.session_state.get('using_demo', False)):
-        
-        # Process uploaded image if available
-        if uploaded_image is not None:
-            # Check if file size is within 5MB
-            if uploaded_image.size <= 5 * 1024 * 1024:
-                # Open the image
-                image = Image.open(uploaded_image)
-                
-                # Save the image to the "images" folder
-                save_path = os.path.join("images", uploaded_image.name)
-                image.save(save_path)
-                
-                # Store the image in session state
-                st.session_state.image = image
-                st.session_state.image_path = save_path
-                st.session_state.using_demo = False
-                
-                # Success message
-                st.markdown('''
-                <div class="success-notification">
-                    <strong>Success!</strong> Image uploaded successfully. Select a feature below to analyze.
-                </div>
-                ''', unsafe_allow_html=True)
-            else:
-                st.markdown('''
-                <div class="error-notification">
-                    <strong>Error!</strong> The file size exceeds the 5MB limit. Please upload a smaller image.
-                </div>
-                ''', unsafe_allow_html=True)
-        
-        # Use the image from session state (either uploaded or demo)
-        if 'image' in st.session_state:
-            image = st.session_state.image
-            
-            # Display the image
-            st.markdown('<div class="uploaded-image-container">', unsafe_allow_html=True)
-            st.image(image, caption="Image Ready for Analysis", use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Feature selection with tabs
-            st.markdown('<div class="analysis-section">', unsafe_allow_html=True)
-            st.markdown('<h2 style="color: #63b3ed;">Select Analysis Feature</h2>', unsafe_allow_html=True)
-            
-            tabs = st.tabs(["Scene Understanding", "Text-to-Speech", "Object Detection", "Personalized Assistance"])
-            
-            # Scene Understanding Tab
-            with tabs[0]:
-                st.subheader("Scene Understanding")
-                st.write("Generate a detailed description of what's in the image to understand the surroundings.")
-                
-                if st.button("Generate Scene Description", key="scene_btn", help="Get a detailed description of the scene"):
-                    with st.spinner("Analyzing scene..."):
-                        try:
-                            # Read the image file as bytes
-                            img_byte_arr = io.BytesIO() 
-                            image.save(img_byte_arr, format=image.format if image.format else 'JPEG')
-                            image_bytes = img_byte_arr.getvalue()
-
-                            # Generate scene description
-                            description = generate_scene_description(image_bytes)
-                            
-                            st.markdown('<div class="result-container">', unsafe_allow_html=True)
-                            st.markdown('<h3 class="result-title">Scene Description</h3>', unsafe_allow_html=True)
-                            st.write(description)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                            
-                            # Add text-to-speech option for the description
-                            if st.button("Listen to Description", key="listen_scene"):
-                                # Path for saving audio
-                                output_audio_path = "audio/scene_description.wav"
-                                
-                                # Convert description to speech
-                                text_to_speech(description, output_audio_path)
-                                
-                                # Store audio path in session state for playback
-                                st.session_state.scene_audio = output_audio_path
-                            
-                            # Play audio if available in session state
-                            if 'scene_audio' in st.session_state:
-                                st.audio(st.session_state.scene_audio, format="audio/wav")
-                                
-                        except Exception as e:
-                            st.error(f"An error occurred: {str(e)}")
-            
-            # Text-to-Speech Tab
-            with tabs[1]:
-                st.subheader("Text-to-Speech")
-                st.write("Extract text from images and convert it to speech for easy listening.")
-                
-                if st.button("Extract & Convert Text", key="tts_btn", help="Extract text from image and convert to speech"):
-                    with st.spinner("Processing text..."):
-                        try:
-                            text = extract_text_from_image(image)
-                            if text.strip():
-                                st.markdown('<div class="result-container">', unsafe_allow_html=True)
-                                st.markdown('<h3 class="result-title">Extracted Text</h3>', unsafe_allow_html=True)
-                                st.write(text)
-                                st.markdown('</div>', unsafe_allow_html=True)
-
-                                # Path for saving audio
-                                output_audio_path = "audio/output_audio.mp3"
-
-                                # Convert extracted text to speech
-                                text_to_speech(text, output_audio_path)
-
-                                # Provide the audio for playback
-                                st.markdown("""
-                                <div class="success-notification">
-                                    <strong>Success!</strong> Text has been successfully converted to speech.
-                                </div>
-                                """, unsafe_allow_html=True)
-                                st.audio(output_audio_path, format="audio/mp3")
-                                
-                                # Download button
-                                with open(output_audio_path, "rb") as file:
-                                    btn = st.download_button(
-                                        label="Download Audio File",
-                                        data=file,
-                                        file_name="output_audio.mp3",
-                                        mime="audio/mp3"
-                                    )
-                            else:
-                                st.warning("No text was detected in the image. Please try another image with visible text.")
-                        except Exception as e:
-                            st.error(f"An error occurred: {str(e)}")
-            
-            # Object Detection Tab
-            with tabs[2]:
-                st.subheader("Object Detection")
-                st.write("Identify objects and potential obstacles in the image.")
-                
-                if st.button("Detect Objects", key="detect_btn", help="Identify objects in the image"):
-                    with st.spinner("Detecting objects..."):
-                        try:
-                            # Detect objects in the image and get annotated image and objects list
-                            detected_image, objects = detector.detect(image)
-                            
-                            st.markdown('<div class="result-container">', unsafe_allow_html=True)
-                            st.markdown('<h3 class="result-title">Detected Objects</h3>', unsafe_allow_html=True)
-                            
-                            # Display the annotated image
-                            st.image(detected_image, caption="Objects Detected", use_container_width=True)
-                            
-                            if objects:
-                                # Display detected objects details
-                                for i, obj in enumerate(objects, 1):
-                                    st.write(f"{i}. {obj['name']} - Confidence: {obj['confidence']:.2f}%")
-                                    st.write(f"   Location: {obj['bbox']['x1']}, {obj['bbox']['y1']}, {obj['bbox']['x2']}, {obj['bbox']['y2']}")
-                                
-                                # Create a description of objects for text-to-speech
-                                objects_description = "I detected the following objects: "
-                                objects_description += ", ".join([obj['name'] for obj in objects])
-                                objects_description += ". "
-                                
-                                for obj in objects:
-                                    objects_description += f"There is a {obj['name']} located at coordinates {obj['bbox']['x1']}, {obj['bbox']['y1']}. "
-                                
-                                # Add text-to-speech option for object description
-                                if st.button("Listen to Object Description", key="listen_objects"):
-                                    # Path for saving audio
-                                    output_audio_path = "audio/objects_description.mp3"
-                                    
-                                    # Convert objects description to speech
-                                    text_to_speech(objects_description, output_audio_path)
-                                    
-                                    # Provide audio playback
-                                    st.audio(output_audio_path, format="audio/mp3")
-                            else:
-                                st.write("No objects were detected in the image.")
-                                
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        except Exception as e:
-                            st.error(f"An error occurred: {str(e)}")
-            
-            # Personalized Assistance Tab
-            with tabs[3]:
-                st.subheader("Personalized Assistance")
-                st.write("Receive context-specific guidance based on what's in the image.")
-                
-                if st.button("Get Personalized Guidance", key="assist_btn", help="Receive context-specific assistance"):
-                    with st.spinner("Generating personalized assistance..."):
-                        try:
-                            st.markdown('<div class="result-container">', unsafe_allow_html=True)
-                            st.markdown('<h3 class="result-title">Task-Specific Guidance</h3>', unsafe_allow_html=True)
-                            
-                            # Generate personalized assistance
-                            guidance = provide_personalized_assistance(image)
-                            st.write(guidance)
-                            
-                            # Add text-to-speech option for the guidance
-                            if st.button("Listen to Guidance", key="listen_guidance"):
-                                # Path for saving audio
-                                output_audio_path = "audio/guidance_audio.mp3"
-                                
-                                # Convert guidance to speech
-                                text_to_speech(guidance, output_audio_path)
-                                
-                                # Provide audio playback
-                                st.audio(output_audio_path, format="audio/mp3")
-                                
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        except Exception as e:
-                            st.error(f"An error occurred: {str(e)}")
-
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Reset Button
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                if st.button("Reset & Upload New Image", key="reset_btn"):
-                    # Clear the session state
-                    if 'image' in st.session_state:
-                        del st.session_state.image
-                    if 'image_path' in st.session_state:
-                        del st.session_state.image_path
-                    if 'using_demo' in st.session_state:
-                        del st.session_state.using_demo
-                    if 'scene_audio' in st.session_state:
-                        del st.session_state.scene_audio
-                    st.rerun()
-
-elif page == "Real-Time Camera":
-    # Header section
-    st.markdown("""
-    <div class="header">
-        <h1 class="app-title">Real-Time Camera</h1>
-        <p class="app-description">Live object detection with voice feedback for real-time assistance</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="analysis-section">
-    <h2 style="color: #63b3ed;">Real-Time Object Detection</h2>
-    <p>This feature uses your device's camera to detect objects in real-time and provides voice feedback about what it sees. It's particularly useful for navigating unfamiliar environments or identifying objects around you.</p>
-    
-    <p><strong>How it works:</strong></p>
-    <ol>
-        <li>Click the "Start Camera Detection" button below</li>
-        <li>Allow camera access when prompted</li>
-        <li>The system will analyze the video feed and speak out detected objects</li>
-        <li>Click "Stop Camera Detection" when you&apos;re done</li>
-    </ol>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Camera access section
-    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
-    st.markdown('<h2 class="upload-header">Camera Access</h2>', unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if not st.session_state.detection_running:
-            if st.button("Start Camera Detection", key="camera_start", help="Begin real-time object detection"):
-                st.session_state.detection_running = True
-                st.markdown("""
-                <div class="success-notification">
-                    <strong>Starting camera...</strong> Please allow camera access when prompted.
-                </div>
-                """, unsafe_allow_html=True)
-                stframe = st.empty()
-                for frame in real_time_object_detection():
-                    if not st.session_state.detection_running:
-                        break
-                    stframe.image(frame, channels="RGB")
-        else:
-            if st.button("Stop Camera Detection", key="camera_stop", help="Stop real-time object detection"):
-                st.session_state.detection_running = False
-                st.markdown("""
-                <div class="warning-notification">
-                    <strong>Camera stopped.</strong> Real-time detection has been stopped.
-                </div>
-                """, unsafe_allow_html=True)
+    with preview_col:
+        with st.container(border=True):
+            ui.feature_intro("🖼️", "Your image", "Ready for analysis")
+            st.image(image, use_container_width=True)
+            if st.button("🔄  Reset & upload new", use_container_width=True):
+                for key in (
+                    "image", "image_path", "using_demo",
+                    "scene_description", "scene_audio",
+                    "detected_image", "detected_objects", "objects_audio",
+                    "guidance", "guidance_audio",
+                ):
+                    st.session_state.pop(key, None)
                 st.rerun()
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Camera usage tips
-    st.markdown("""
-    <div class="analysis-section">
-    <h3 style="color: #63b3ed;">Tips for Best Results</h3>
-    <ul>
-        <li>Ensure good lighting for better detection accuracy</li>
-        <li>Keep the camera stable when possible</li>
-        <li>Move the camera slowly to allow for better detection</li>
-        <li>For text reading, hold the camera steady and close to the text</li>
-        <li>The system works best with common objects and clear scenes</li>
-    </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Privacy notice
-    st.markdown("""
-    <div class="result-container">
-    <h3 class="result-title">Privacy Notice</h3>
-    <p>Your camera feed is processed locally on your device. No video is stored or transmitted to remote servers. The system only uses the feed for real-time object detection to provide immediate audio feedback.</p>
-    </div>
-    """, unsafe_allow_html=True)
 
-# --- Footer ---
-st.markdown("""
-<div class="footer">
-    <p>VisionAI Assistant | Enhancing accessibility through technology</p>
-    <p>Version 2.0 | &copy; 2025</p>
-</div>
-""", unsafe_allow_html=True)
+    with actions_col:
+        tabs = st.tabs(["👁️ Scene", "🔊 Text", "🚧 Objects", "🤝 Assist"])
 
-# Keyboard shortcuts script (removed for Streamlit compatibility)
-# Streamlit does not support <script> tags in markdown for security reasons.
+        # -- Scene Understanding --
+        with tabs[0]:
+            ui.feature_intro("👁️", "Scene Understanding", "A natural description of the whole scene.")
+            if st.button("Generate description", key="scene_btn", type="primary", use_container_width=True):
+                with st.spinner("Analyzing the scene…"):
+                    try:
+                        buf = io.BytesIO()
+                        image.save(buf, format=image.format or "JPEG")
+                        st.session_state.scene_description = generate_scene_description(buf.getvalue())
+                        st.session_state.pop("scene_audio", None)
+                    except Exception as e:
+                        ui.notice("error", "Something went wrong.", str(e))
+
+            if "scene_description" in st.session_state:
+                with st.container(border=True):
+                    st.markdown("**Description**")
+                    st.write(st.session_state.scene_description)
+                _listen("scene", st.session_state.scene_description, "audio/scene_description.wav", "wav")
+
+        # -- Text to Speech --
+        with tabs[1]:
+            ui.feature_intro("🔊", "Text to Speech", "Extract printed text and hear it read aloud.")
+            if st.button("Extract & read text", key="tts_btn", type="primary", use_container_width=True):
+                with st.spinner("Reading the text…"):
+                    try:
+                        text = extract_text_from_image(image)
+                        if text.strip():
+                            st.session_state.extracted_text = text
+                            out = "audio/output_audio.mp3"
+                            text_to_speech(text, out)
+                            st.session_state.text_audio = out
+                        else:
+                            st.session_state.pop("extracted_text", None)
+                            ui.notice("warning", "No text found.", "Try an image with clearer text.")
+                    except Exception as e:
+                        ui.notice("error", "Something went wrong.", str(e))
+
+            if "extracted_text" in st.session_state:
+                with st.container(border=True):
+                    st.markdown("**Extracted text**")
+                    st.write(st.session_state.extracted_text)
+                if "text_audio" in st.session_state:
+                    st.audio(st.session_state.text_audio, format="audio/mp3")
+                    with open(st.session_state.text_audio, "rb") as fh:
+                        st.download_button("⬇️  Download audio", fh, "output_audio.mp3", "audio/mp3", use_container_width=True)
+
+        # -- Object Detection --
+        with tabs[2]:
+            ui.feature_intro("🚧", "Object Detection", "Find objects and obstacles, with positions.")
+            if st.button("Detect objects", key="detect_btn", type="primary", use_container_width=True):
+                with st.spinner("Detecting objects…"):
+                    try:
+                        det_img, objects = get_detector().detect(image)
+                        st.session_state.detected_image = det_img
+                        st.session_state.detected_objects = objects
+                        st.session_state.pop("objects_audio", None)
+                    except Exception as e:
+                        ui.notice("error", "Something went wrong.", str(e))
+
+            if "detected_objects" in st.session_state:
+                objects = st.session_state.detected_objects
+                with st.container(border=True):
+                    st.image(st.session_state.detected_image, use_container_width=True)
+                    if objects:
+                        st.markdown(f"**{len(objects)} object(s) detected**")
+                        for i, obj in enumerate(objects, 1):
+                            st.write(
+                                f"{i}. **{obj['name']}** · {obj['confidence']:.0f}% · "
+                                f"({obj['bbox']['x1']}, {obj['bbox']['y1']})"
+                            )
+                    else:
+                        st.write("No objects were detected in this image.")
+                if objects:
+                    desc = "I detected: " + ", ".join(o["name"] for o in objects) + ". "
+                    desc += " ".join(
+                        f"A {o['name']} at {o['bbox']['x1']}, {o['bbox']['y1']}." for o in objects
+                    )
+                    _listen("objects", desc, "audio/objects_description.mp3", "mp3")
+
+        # -- Personalized Assistance --
+        with tabs[3]:
+            ui.feature_intro("🤝", "Personalized Assistance", "Context-aware guidance for daily tasks.")
+            if st.button("Get guidance", key="assist_btn", type="primary", use_container_width=True):
+                with st.spinner("Thinking it through…"):
+                    try:
+                        st.session_state.guidance = provide_personalized_assistance(image)
+                        st.session_state.pop("guidance_audio", None)
+                    except Exception as e:
+                        ui.notice("error", "Something went wrong.", str(e))
+
+            if "guidance" in st.session_state:
+                with st.container(border=True):
+                    st.markdown("**Guidance**")
+                    st.write(st.session_state.guidance)
+                _listen("guidance", st.session_state.guidance, "audio/guidance_audio.mp3", "mp3")
+
+
+def _listen(key: str, text: str, path: str, fmt: str) -> None:
+    """Shared 'Listen' control that persists audio across reruns."""
+    audio_key = f"{key}_audio"
+    if st.button("🔊  Listen", key=f"listen_{key}", use_container_width=True):
+        try:
+            text_to_speech(text, path)
+            st.session_state[audio_key] = path
+        except Exception as e:
+            ui.notice("error", "Couldn't generate audio.", str(e))
+    if audio_key in st.session_state:
+        st.audio(st.session_state[audio_key], format=f"audio/{fmt}")
+
+
+def render_camera() -> None:
+    ui.hero(
+        title="Real-Time Camera",
+        subtitle="Live object detection with spoken feedback — point your camera and hear "
+        "what's around you.",
+        eyebrow="Live · Voice feedback",
+    )
+
+    running = st.session_state.detection_running
+    ui.status_chip("Camera live — detecting" if running else "Camera idle", "live" if running else "idle")
+
+    ctrl = st.columns([1, 1, 1])[1]
+    with ctrl:
+        if not running:
+            if st.button("▶  Start detection", key="camera_start", type="primary", use_container_width=True):
+                st.session_state.detection_running = True
+                st.rerun()
+        else:
+            if st.button("⏹  Stop detection", key="camera_stop", use_container_width=True):
+                st.session_state.detection_running = False
+                st.rerun()
+
+    if running:
+        stframe = st.empty()
+        try:
+            for frame in real_time_object_detection():
+                if not st.session_state.detection_running:
+                    break
+                stframe.image(frame, channels="RGB", use_container_width=True)
+        except Exception as e:
+            st.session_state.detection_running = False
+            ui.notice("error", "Camera error.", str(e))
+
+    col_a, col_b = st.columns(2, gap="large")
+    with col_a:
+        ui.tips(
+            "For best results",
+            [
+                "Ensure good, even lighting",
+                "Hold the camera steady",
+                "Move slowly to let detection keep up",
+                "Get close and steady when reading text",
+            ],
+        )
+    with col_b:
+        ui.tips(
+            "Your privacy",
+            [
+                "The camera feed is processed locally",
+                "No video is stored or uploaded",
+                "Feedback is generated in real time only",
+            ],
+            icon="🔒",
+        )
+
+
+# --------------------------------------------------------------------------- #
+# Router
+# --------------------------------------------------------------------------- #
+if page == "Home":
+    render_home()
+elif page == "Image Analysis":
+    render_image_analysis()
+elif page == "Real-Time Camera":
+    render_camera()
+elif page == "Navigation Assistance":
+    navigation_page()
+
+ui.footer()

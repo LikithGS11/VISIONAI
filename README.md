@@ -93,11 +93,18 @@ VisionAI is an innovative solution designed to empower visually impaired individ
 
 - 🔐 **Step 5:** Set up `.env` file  
   - Copy `.env.example` to `.env`  
-  - Add your Google API key and Tesseract path like this:  
+  - Fill in your own values (the `.env` file is git-ignored — never commit it):  
     ```env
-    GOOGLE_API_KEY=your_api_key_here
+    GOOGLE_API_KEY=your_gemini_api_key_here
+    ORS_API_KEY=your_openrouteservice_api_key_here
     TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+    DEFAULT_LAT=12.9716
+    DEFAULT_LON=77.5946
+    EMERGENCY_PHONE=91XXXXXXXXXX
     ```
+  - `GOOGLE_API_KEY` powers Scene Understanding & Personalized Assistance,
+    `ORS_API_KEY` powers Navigation, and `DEFAULT_LAT/LON` + `EMERGENCY_PHONE`
+    seed the Navigation page's location and WhatsApp share button.
 
 - 🚀 **Step 6:** Run the app  
   ```bash

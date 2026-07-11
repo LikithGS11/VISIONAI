@@ -13,6 +13,17 @@ keys/gemini_key.txt
 
 ########################################################
 
+# YOLO model weights (auto-downloaded by ultralytics on first run)
+*.pt
+
+# Generated / uploaded media (runtime artifacts, not source)
+voice.mp3
+audio/*.mp3
+audio/*.wav
+temp_*.mp3
+
+########################################################
+
 # Distribution / packaging
 .Python
 build/
