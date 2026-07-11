@@ -1,23 +1,29 @@
+import os
 import streamlit as st
 from streamlit_folium import st_folium
 import folium
 from geopy.geocoders import Nominatim
 import requests
 from gtts import gTTS
-import os
 
-# OpenRouteService API Key
-ORS_API_KEY = "5b3ce3597851110001cf624862120acdb848408db8be2db64ccd3f02"
+# OpenRouteService API key (see .env / .env.example)
+ORS_API_KEY = os.getenv("ORS_API_KEY", "")
+
+# Personal details are read from the environment so they are never committed.
+EMERGENCY_PHONE = os.getenv("EMERGENCY_PHONE", "")  # e.g. 919999999999
+DEFAULT_LAT = float(os.getenv("DEFAULT_LAT", "0.0"))
+DEFAULT_LON = float(os.getenv("DEFAULT_LON", "0.0"))
 
 # Get route info
 def get_route_info(start_lat, start_lon, end_lat, end_lon):
-    url = "https://api.openrouteservice.org/v2/directions/driving-car"
+    # foot-walking is the appropriate profile for a pedestrian navigation aid
+    url = "https://api.openrouteservice.org/v2/directions/foot-walking"
     headers = {"Authorization": ORS_API_KEY}
     params = {
         "start": f"{start_lon},{start_lat}",
         "end": f"{end_lon},{end_lat}"
     }
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, timeout=15)
     data = response.json()
 
     distance_km = data["features"][0]["properties"]["segments"][0]["distance"] / 1000
@@ -33,18 +39,25 @@ def speak_gtts(text, filename="voice.mp3"):
 
 # Main Navigation Page
 def navigation_page():
-    st.title("🧭 Navigation Assistance")
+    from utils import ui
 
-    CURRENT_LAT, CURRENT_LON = 12.983594, 77.762028
+    ui.hero(
+        title="Navigation Assistance",
+        subtitle="Find your location, set a destination and get spoken walking directions "
+        "to reach it with confidence.",
+        eyebrow="Location · Routing · Voice",
+    )
+
+    CURRENT_LAT, CURRENT_LON = DEFAULT_LAT, DEFAULT_LON
 
     if 'current_location' not in st.session_state:
         st.session_state.current_location = (CURRENT_LAT, CURRENT_LON)
 
-    if st.button("📍 Current Location"):
+    if st.button("📍  Use current location"):
         st.session_state.current_location = (CURRENT_LAT, CURRENT_LON)
 
     lat, lon = st.session_state.current_location
-    st.markdown(f"**Your Current Location:** {lat:.6f}, {lon:.6f}")
+    ui.notice("info", "Your location:", f"{lat:.6f}, {lon:.6f}")
 
     if 'destination' not in st.session_state:
         st.session_state.destination = ""
@@ -57,17 +70,20 @@ def navigation_page():
 
     col1, col2 = st.columns(2)
     with col1:
-        send_wa = st.button("📲 Send via WhatsApp")
+        send_wa = st.button("📲  Send via WhatsApp", use_container_width=True)
     with col2:
-        speak_button = st.button("🔊 Speak Info")
+        speak_button = st.button("🔊  Speak info", type="primary", use_container_width=True)
 
     m = folium.Map(location=[lat, lon], zoom_start=14)
     folium.Marker([lat, lon], tooltip="You are here", icon=folium.Icon(color='blue')).add_to(m)
 
     if send_wa:
-        message = f"This is Vision. My current location is: https://www.google.com/maps?q={lat},{lon}"
-        whatsapp_url = f"https://wa.me/919482835618?text={message.replace(' ', '%20')}"
-        st.markdown(
+        if not EMERGENCY_PHONE:
+            st.warning("Set EMERGENCY_PHONE in your .env file to enable WhatsApp sharing.")
+        else:
+            message = f"This is Vision. My current location is: https://www.google.com/maps?q={lat},{lon}"
+            whatsapp_url = f"https://wa.me/{EMERGENCY_PHONE}?text={message.replace(' ', '%20')}"
+            st.markdown(
             f"""
             <a href="{whatsapp_url}" target="_blank" style="text-decoration:none;">
                 <button style="
@@ -104,8 +120,8 @@ def navigation_page():
                 distance, duration = get_route_info(lat, lon, dest_lat, dest_lon)
                 st.success(f"📍 Route shown to: {destination}")
                 st.info(f"🛣️ Distance: **{distance} km** | ⏱️ Estimated Time: **{duration} minutes**")
-                voice_output = f"Your destination is {destination}. The distance is {distance} kilometers. Estimated travel time is {duration} minutes."
-            except:
+                voice_output = f"Your destination is {destination}. The distance is {distance} kilometers. Estimated walking time is {duration} minutes."
+            except Exception:
                 st.warning("Couldn't fetch route info. Check ORS API key or destination validity.")
         else:
             st.warning("Could not find the destination. Please check the spelling or try a different place.")
@@ -117,7 +133,7 @@ def navigation_page():
     if speak_button:
         speak_gtts(voice_output)
 
-    st_folium(m, width=700, height=500)
+    st_folium(m, use_container_width=True, height=520)
 
 # Run app
 if __name__ == "__main__":
