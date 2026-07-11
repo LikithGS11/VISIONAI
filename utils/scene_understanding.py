@@ -26,13 +26,18 @@
 
 ############################### **Using LangChain** #######################################
 
+import os
+import base64
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
-import base64
 
 def generate_scene_description(image_bytes):
-    # Directly add your Gemini API key here
-    api_key = "AIzaSyBTxX7W7NUtQS6wmddROYLEPXQRo1pmJqw"
+    # Read the Gemini API key from the environment (see .env / .env.example)
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "GOOGLE_API_KEY is not set. Add it to your .env file (see .env.example)."
+        )
 
     # Initialize the LangChain model with the Gemini API
     model = ChatGoogleGenerativeAI(model="gemini-1.5-flash", api_key=api_key)

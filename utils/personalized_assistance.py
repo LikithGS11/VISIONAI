@@ -1,10 +1,15 @@
+import os
 import google.generativeai as genai
 
 # Analyze the uploaded image and provide personalized guidance or assistance.
 def provide_personalized_assistance(image):
     try:
-        # Directly add your Gemini API key here
-        api_key = "AIzaSyBTxX7W7NUtQS6wmddROYLEPXQRo1pmJqw"
+        # Read the Gemini API key from the environment (see .env / .env.example)
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            return (
+                "GOOGLE_API_KEY is not set. Add it to your .env file (see .env.example)."
+            )
 
         # Configure the Google API with the provided API key
         genai.configure(api_key=api_key)
