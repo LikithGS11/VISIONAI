@@ -13,6 +13,11 @@
   <img alt="Languages" src="https://img.shields.io/badge/Languages-8-FFC800?style=flat" />
 </p>
 
+<p align="center">
+  <img src="docs/visionai-overview.png" width="100%"
+       alt="VisionAI screenshots: the landing page; a photo with three people outlined and the summary 'Person on your left, close'; the chat with a scene description from the local AI; the live camera screen; and the settings for voice, speed and accessibility." />
+</p>
+
 ---
 
 ## ✨ Features
