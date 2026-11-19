@@ -1,0 +1,57 @@
+{
+  "name": "VisionAI — see the world, out loud",
+  "short_name": "VisionAI",
+  "description": "Describes photos, reads text, spots obstacles and guides your walk — out loud, in 8 languages.",
+  "start_url": "/#/chat",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#16150F",
+  "theme_color": "#FFC800",
+  "lang": "en",
+  "categories": [
+    "accessibility",
+    "utilities",
+    "navigation"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New chat",
+      "url": "/#/chat",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Live camera",
+      "url": "/#/chat/live",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
