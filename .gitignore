@@ -35,6 +35,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+# web/src/lib is frontend source, not a Python build folder
+!web/src/lib/
 lib64/
 parts/
 sdist/
