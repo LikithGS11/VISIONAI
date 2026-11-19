@@ -1,24 +1,30 @@
-# IN TERMINAL TYPE: pip install -r requirements.txt TO INSTALL ALL THE LIBRARIES
+# Install with:  pip install -r requirements.txt
+# (Dev/test tools are in requirements-dev.txt)
 
-streamlit>=1.32
-torch>=2.0
-torchvision>=0.15
-ultralytics>=8.1
-pillow>=10.0
-opencv-python>=4.8
-numpy>=1.24
-pytesseract>=0.3.10
-google-generativeai>=0.5
-langchain-google-genai>=1.0
-langchain>=0.1
-langchain-core>=0.1
-pyttsx3>=2.90
-streamlit_folium>=0.19
-folium>=0.15
-geopy>=2.4
-requests>=2.31
-pyyaml>=6.0
-tqdm>=4.66
-gtts>=2.5
-playsound==1.2.2
+# --- Core (visionai/) ---
+pydantic>=2.7
+pydantic-settings>=2.4
 python-dotenv>=1.0
+pillow>=10.0
+numpy>=1.24
+opencv-python>=4.8
+ultralytics>=8.4          # YOLO26 support
+google-genai>=1.0         # Gemini
+pytesseract>=0.3.10
+gtts>=2.5
+requests>=2.31
+cachetools>=5.3
+
+# Offline translation (IndicTrans2) — optional, ~1 GB model download on first use
+transformers>=4.44,<5
+sentencepiece>=0.2
+huggingface_hub>=0.24
+
+# Fully local mode (optional): speech recognition. The local AI uses Ollama (https://ollama.com),
+# installed separately: `ollama pull gemma3:4b`.
+faster-whisper>=1.1
+
+# --- API (api/) ---
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
