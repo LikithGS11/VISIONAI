@@ -1,192 +1,219 @@
-# 👁️ VisionAI — Assistive Vision Intelligence
+# 👁️ VisionAI — See the world, out loud
 
-> AI-powered assistance that turns any image or live camera feed into clear, **spoken** understanding — scene descriptions, text, objects, and guidance — built to help visually impaired people navigate the world with confidence.
+> An AI assistant for blind and low-vision people. Chat with it, send a photo or point your camera, and it
+> describes scenes, reads signs, checks money, warns you about obstacles and walks you to where you're going —
+> **out loud, in 8 languages**, and it can run **entirely on your own computer**.
 
 <p align="center">
   <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white" />
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" />
-  <img alt="Ultralytics YOLO" src="https://img.shields.io/badge/Ultralytics%20YOLO-111F68?style=flat&logo=ultralytics&logoColor=white" />
-  <img alt="Google Gemini" src="https://img.shields.io/badge/Google%20Gemini-4285F4?style=flat&logo=google&logoColor=white" />
-  <img alt="OpenCV" src="https://img.shields.io/badge/OpenCV-5C3EE8?style=flat&logo=opencv&logoColor=white" />
-  <img alt="Tesseract OCR" src="https://img.shields.io/badge/Tesseract%20OCR-FF4500?style=flat" />
+  <img alt="React" src="https://img.shields.io/badge/React-TypeScript-61DAFB?style=flat&logo=react&logoColor=black" />
+  <img alt="YOLO26" src="https://img.shields.io/badge/Ultralytics-YOLO26-111F68?style=flat" />
+  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-Gemma%203-000000?style=flat" />
+  <img alt="Languages" src="https://img.shields.io/badge/Languages-8-FFC800?style=flat" />
 </p>
 
 ---
 
 ## ✨ Features
 
-| Feature | What it does |
-| --- | --- |
-| 👁️ **Scene Understanding** | Generates a rich, natural description of what's in an image for instant spatial awareness. |
-| 🔊 **Text to Speech** | Extracts printed text from images (OCR) and reads it aloud — labels, signs, documents. |
-| 🚧 **Object Detection** | Identifies objects and potential obstacles with their positions, using YOLOv8. |
-| 🤝 **Personalized Assistance** | Provides context-aware guidance tailored to what the camera actually sees. |
-| 📷 **Real-Time Camera** | Live object detection from the user's own camera (WebSocket), with spoken alerts. |
-| 🧭 **Navigation Assistance** | Location awareness and walking directions to a chosen destination. |
+VisionAI opens on a **landing page**; **Start chatting** opens a **ChatGPT-style chat**. Type, speak or attach a
+photo — answers come back as cards and are read aloud.
 
-Every result can be **listened to**, and the interface is designed to be screen-reader friendly.
+| Feature | Try saying… | What you get |
+| --- | --- | --- |
+| 👁️ **Describe a photo** | *"What's in this photo?"* | A short description, most important things first |
+| 📄 **Read text** | *"What does this say?"* | Signs, labels, letters, medicine — with a **Translate** button |
+| 🚧 **Find objects** | *"Find objects"* | Boxes on your photo + *"chair on your left, close"* or *"chair at 10 o'clock"* |
+| 💵 **Check money** | *"How much money is this?"* | Indian rupee notes and coins, with a total |
+| 💬 **Ask anything** | *"Is the light on?"* | Follow-up questions about your last photo, like ChatGPT |
+| 📷 **Live camera** | *"Open live camera"* | Spoken warnings, **distance beeps** like a parking sensor, vibration, sound from the object's side |
+| 🧭 **Walking directions** | *"Take me to Cubbon Park"* | Distance, time, turn-by-turn steps and a map |
+| 🌐 **Translate** | *"Translate emergency exit"* | Offline translation into your language |
 
----
+**Languages:** English, हिन्दी, ಕನ್ನಡ, தமிழ், తెలుగు, മലയാളം, मराठी, বাংলা.
 
-## 🛠️ Tech Stack
-
-- **Core (`visionai/`):** UI-independent Python package shared by every front end
-- **Backend API:** FastAPI (REST + WebSocket for live detection)
-- **Frontend:** React + TypeScript (Vite), Tailwind CSS, TanStack Query, Leaflet — in `web/`
-- **Vision / AI:** Google Gemini (`google-genai` SDK), Ultralytics YOLO26, OpenCV, Tesseract OCR
-- **Speech:** `gTTS` in 8 languages (English, Hindi, Kannada, Tamil, Telugu, Malayalam, Marathi, Bengali)
-- **Navigation:** OpenStreetMap Nominatim, OpenRouteService walking routes
+**Settings:** who reads results (VisionAI's voice or your screen reader), speaking speed, offline or device voice,
+microphone mode, distance beeps, and left/right vs clock-face directions.
 
 ---
 
-## 🚀 Getting Started (Windows)
+## 🛠️ How it works
 
-### 1. Clone the repository
+| Part | Runs on | Technology |
+| --- | --- | --- |
+| Frontend | Browser (installable as a phone app) | React + TypeScript, Vite, Tailwind CSS, TanStack Query, Leaflet |
+| Backend | Your server | FastAPI (REST + WebSocket) |
+| Object detection | **Local** | Ultralytics YOLO26 |
+| Vision AI (describe, money, questions, chat) | **Local** or cloud | Ollama + Gemma 3 (GPU) — or Google Gemini |
+| Translation | **Local** | AI4Bharat IndicTrans2 |
+| Voice output | **Local** or cloud | Meta MMS-TTS offline voices — or Google TTS |
+| Voice input | **Local** or browser | Whisper (faster-whisper) — or the browser's speech recognition |
+| Printed text | **Local** | Tesseract OCR (AI fallback for hard text) |
+| Maps & routes | Cloud | OpenStreetMap Nominatim + OpenRouteService |
+
+Safety warnings ("Careful", object names, directions) are pre-translated, so they are instant and work offline.
+
+---
+
+## 🚀 Getting started
+
+You need **Python 3.10+**, **[Node.js](https://nodejs.org/) 20+** and
+**[Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki)** (for reading text).
+
+### 1. Get the code and install
 
 ```bash
 git clone https://github.com/LikithGS11/VISIONAI.git
 cd VISIONAI
-```
 
-### 2. Create and activate a virtual environment
-
-```bash
 python -m venv venv
-venv\Scripts\activate
-```
+venv\Scripts\activate            # Windows
+# source venv/bin/activate       # macOS / Linux
 
-### 3. Install dependencies
-
-```bash
 pip install -r requirements.txt
-```
-
-### 4. Install Tesseract OCR
-
-Download from **[Tesseract for Windows](https://github.com/UB-Mannheim/tesseract/wiki)** and note the install path
-(e.g. `C:\Program Files\Tesseract-OCR\tesseract.exe`).
-
-### 5. Configure your environment
-
-Copy the example file and fill in **your own** values — `.env` is git-ignored and must never be committed:
-
-```bash
-copy .env.example .env
-```
-
-| Variable | Required for | Description |
-| --- | --- | --- |
-| `GOOGLE_API_KEY` | Scene Understanding, Personalized Assistance | Gemini key — [get one here](https://aistudio.google.com/app/apikey) |
-| `GEMINI_MODEL` | AI features | Defaults to `gemini-flash-latest` (tracks Google's current Flash model) |
-| `ORS_API_KEY` | Navigation | OpenRouteService key — [get one here](https://openrouteservice.org/dev/) |
-| `TESSERACT_PATH` | Text to Speech (OCR) | Path to `tesseract.exe` (or just `tesseract` if on PATH) |
-| `DEFAULT_LAT` / `DEFAULT_LON` | Navigation | Fallback "current location" coordinates |
-| `EMERGENCY_PHONE` | Navigation | Contact for the "Share my location" button (country code + number) |
-
-See `.env.example` for the optional settings (`YOLO_MODEL`, `MAX_UPLOAD_MB`, `CORS_ORIGINS`, …).
-
-### 6. Run it
-
-You need [Node.js](https://nodejs.org/) 20+ for the frontend.
-
-**Everything on one server** (simplest):
-
-```bash
 cd web && npm install && npm run build && cd ..
+```
+
+### 2. Configure
+
+```bash
+copy .env.example .env           # Windows   (cp .env.example .env on macOS / Linux)
+```
+
+Everything is optional — fill in what you use. `.env` is git-ignored; never commit it.
+
+| Variable | Used for | Notes |
+| --- | --- | --- |
+| `AI_PROVIDER` | Vision AI | `auto` (default: local Ollama if running, else Gemini), `ollama` or `gemini` |
+| `OLLAMA_MODEL` | Local AI | Default `gemma3:4b` |
+| `GOOGLE_API_KEY` | Cloud AI | Gemini key — [get one here](https://aistudio.google.com/app/apikey) |
+| `ORS_API_KEY` | Walking directions | OpenRouteService key — [get one here](https://openrouteservice.org/dev/) |
+| `HF_TOKEN` | First download of the translator | Hugging Face read token (the model is gated) |
+| `TTS_PROVIDER` | Voice output | `auto` (default), `local` or `gtts` |
+| `STT_MODEL` | Voice input | Whisper size: `small` (default), `base`, `medium` |
+| `TESSERACT_PATH` | Reading text | e.g. `C:\Program Files\Tesseract-OCR\tesseract.exe` |
+| `DEFAULT_LAT` / `DEFAULT_LON` | Directions | Fallback start point when GPS is unavailable |
+| `EMERGENCY_PHONE` | Share location | Country code + number, no `+` |
+
+See [.env.example](.env.example) for every option.
+
+### 3. Run
+
+```bash
 uvicorn api.main:app
 ```
 
-Open **[http://localhost:8000](http://localhost:8000)**. API docs are at **[/docs](http://localhost:8000/docs)**.
+Open **[http://localhost:8000](http://localhost:8000)**. API docs: **[/docs](http://localhost:8000/docs)**.
 
-**While developing** (live reload), run these in two terminals:
+For development with live reload, run `uvicorn api.main:app --reload` and, in a second terminal,
+`cd web && npm run dev`, then open **[http://localhost:5173](http://localhost:5173)**.
+
+> The camera and microphone work on `localhost`. To use VisionAI from a phone or another device, serve it over HTTPS.
+
+---
+
+## 🔒 Fully local mode (no internet, no API keys)
+
+Everything except maps can run on your own machine. Tested on a laptop with an RTX 5050 (8 GB), i7 and 24 GB RAM.
 
 ```bash
-uvicorn api.main:app --reload       # terminal 1: backend on :8000
-cd web && npm run dev               # terminal 2: frontend on :5173
+# 1. Local vision AI — install Ollama from https://ollama.com, then:
+ollama pull gemma3:4b
+
+# 2. Offline translation — accept the terms at
+#    https://huggingface.co/ai4bharat/indictrans2-en-indic-dist-200M , put HF_TOKEN in .env, then:
+python -m visionai.translate --download
+
+# 3. Offline voices for all 8 languages:
+python -m visionai.speech.tts --download
+
+# 4. Speech recognition (Whisper) downloads itself on first use.
 ```
 
-Then open **[http://localhost:5173](http://localhost:5173)**. The camera works on `localhost`; other devices need HTTPS.
+With `AI_PROVIDER=auto`, VisionAI uses Gemma whenever Ollama is running. Models load in the background when the server
+starts, so answers take about 1–5 seconds.
+
+**Good to know**
+
+- The local model is smaller than Gemini and makes more mistakes — always double-check important details.
+- Gemma answers in English and IndicTrans2 translates it, which is more reliable than asking a small model to reply in Kannada.
+- Local speech recognition is reliable for English, Hindi and Tamil. For other languages the app uses the browser's
+  recognition unless you choose **Settings → Microphone → On this device**.
+- The offline voices (Meta MMS-TTS) are licensed **CC-BY-NC 4.0** — fine for personal and research use, not for commercial use.
+
+---
+
+## 🔌 API
 
 | Endpoint | Purpose |
 | --- | --- |
-| `POST /api/describe` · `/api/assist` · `/api/ask` | Gemini scene description, guidance, free-form questions |
-| `POST /api/ocr` | Text extraction (Tesseract, Gemini fallback) |
-| `POST /api/detect` | Objects with position (left/ahead/right) and proximity |
-| `POST /api/tts` | Text → MP3 in any supported language |
-| `GET /api/navigation/route` | Walking route with turn-by-turn steps |
-| `WS /ws/live` | Send JPEG frames, receive detections + what to announce |
+| `POST /api/describe` · `/api/assist` · `/api/ask` · `/api/currency` | Vision AI on a photo |
+| `POST /api/chat` | Chat without a photo |
+| `POST /api/ocr` | Read text (Tesseract, AI fallback) |
+| `POST /api/detect` | Objects with position, clock direction and distance |
+| `POST /api/tts` · `/api/transcribe` | Text → speech · speech → text |
+| `POST /api/translate` | English → Indian languages, offline |
+| `GET /api/navigation/route` | Walking route with steps (translated when possible) |
+| `WS /ws/live?lang=kn&style=clock` | Send camera frames, get detections and what to announce |
+| `GET /api/config` · `/api/health` | What's available on this server |
 
-### Fully local mode (no internet, no API keys)
+---
 
-Everything except maps can run on your own machine (tested on an RTX 5050 laptop, 8 GB VRAM):
-
-| Part | Local engine | Setup |
-| --- | --- | --- |
-| AI (describe, money, questions) | Ollama + Gemma 3 4B (GPU) | Install [Ollama](https://ollama.com), then `ollama pull gemma3:4b` |
-| Answers in Indian languages | IndicTrans2 (translates the AI's English answer) | `python -m visionai.translate --download` (needs `HF_TOKEN` once) |
-| Speech → text | Whisper small (faster-whisper) | Downloads on first use |
-| Text → speech | Meta MMS-TTS, 8 languages (CC-BY-NC licence) | `python -m visionai.speech.tts --download` |
-
-`AI_PROVIDER=auto` (default) uses Ollama whenever it is running, otherwise Gemini.
-Local Whisper is reliable for English, Hindi and Tamil; for other languages the app uses the
-browser's recogniser unless you pick **Settings → Microphone → On this device**.
-
-### 7. Run the tests
+## 🧪 Tests
 
 ```bash
 pip install -r requirements-dev.txt
 pytest                 # everything
-pytest -m "not slow"   # skip the real YOLO model test
+pytest -m "not slow"   # skip the test that loads the real YOLO model
 ```
 
 ---
 
-## 📁 Project Structure
+## 📁 Project structure
 
 ```text
 VISIONAI/
-├── visionai/                     # Core logic — no UI code
-│   ├── config.py                 # All settings, loaded from .env
-│   ├── errors.py                 # User-safe error types
-│   ├── ai/gemini.py              # Gemini prompts + provider
-│   ├── vision/
-│   │   ├── images.py             # Safe image decoding (in memory)
-│   │   ├── detector.py           # YOLO26 + spoken summaries
-│   │   ├── announcer.py          # When to speak during live detection
-│   │   └── ocr.py                # Tesseract with AI fallback
-│   ├── speech/tts.py             # Text → MP3 bytes
-│   └── nav/routing.py            # Cached geocoding + walking routes
-├── api/                          # FastAPI backend
-│   ├── main.py                   # App, CORS, error handling
-│   └── routes/                   # analyze, speech, navigation, live (WebSocket)
-├── web/                          # React + TypeScript frontend
-│   └── src/pages/                # Photo, Live camera, Directions
-├── tests/                        # pytest suite
-├── .env.example                  # Template for your local .env
-├── requirements.txt / requirements-dev.txt
-└── packages.txt                  # OS-level deps (Linux)
+├── visionai/                # Core logic (no UI)
+│   ├── config.py            # All settings, loaded from .env
+│   ├── errors.py            # User-safe error messages
+│   ├── i18n.py              # Pre-translated safety phrases + 80 object names in 8 languages
+│   ├── translate.py         # Offline IndicTrans2 translation
+│   ├── ai/                  # gemini.py (cloud) · ollama.py (local) — same interface
+│   ├── vision/              # images, YOLO detector, live announcer, OCR
+│   ├── speech/              # tts.py (offline voices / Google) · stt.py (Whisper)
+│   └── nav/routing.py       # Cached geocoding + walking routes
+├── api/                     # FastAPI app and routes (analyze, speech, navigation, translate, live)
+├── web/                     # React + TypeScript frontend
+│   └── src/
+│       ├── pages/           # Landing, Chat, Live camera
+│       ├── components/      # Chat cards, settings, design system
+│       └── lib/             # API client, speech engine, beeps, voice input, intents
+├── tests/                   # pytest suite
+├── .env.example             # Template for your .env
+└── requirements.txt / requirements-dev.txt
 ```
 
-> **Note:** YOLO model weights (`*.pt`) are **not** committed — Ultralytics downloads them automatically on first run.
+Model files (YOLO weights, translator, voices, Whisper) are downloaded on first use and are not committed.
 
 ---
 
 ## ♿ Accessibility
 
-- Built for screen readers: page headings take focus on navigation, results are announced, every control is labelled
-- Full keyboard use, plus single-key shortcuts on the Photo page (**D** describe, **R** read, **O** objects, **H** help)
-- Atkinson Hyperlegible font (designed for low-vision readers), 18px base text, 48px+ touch targets, follows light/dark mode
-- Every analysis result can be **read aloud**, and audio is **downloadable** for offline use
-- Detected objects are described by **direction and distance** ("chair on your left, close"), not pixel coordinates
-- Answers and speech in **8 Indian and international languages**
+- Works with **TalkBack, NVDA and VoiceOver**: labelled controls, announced results, a "screen reader" mode so you never hear two voices
+- Only one voice at a time: urgent warnings interrupt, old messages are dropped instead of played late
+- Live camera: one object at a time, **distance beeps**, vibration, and sound from the object's side with headphones
+- Directions as **left / right** or **clock face** ("chair at 10 o'clock"), as taught in mobility training
+- Atkinson Hyperlegible font, large touch targets, light and dark mode, adjustable speaking speed
+
+> VisionAI is a helper, not a replacement. Keep using your cane, guide dog or a trusted person for crossings and
+> anything safety-critical.
 
 ---
 
 ## 👥 Team
 
 **Likith G S** · **Dayana G S** · **Manisha Koli** · **Ananya V**
-
----
 
 ## 🤝 Contributing
 

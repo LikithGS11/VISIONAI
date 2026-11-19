@@ -1,5 +1,5 @@
 # Install with:  pip install -r requirements.txt
-# (Dev/test tools are in requirements-dev.txt)
+# Dev/test tools are in requirements-dev.txt. Python 3.10+.
 
 # --- Core (visionai/) ---
 pydantic>=2.7
@@ -8,21 +8,23 @@ python-dotenv>=1.0
 pillow>=10.0
 numpy>=1.24
 opencv-python>=4.8
-ultralytics>=8.4          # YOLO26 support
-google-genai>=1.0         # Gemini
-pytesseract>=0.3.10
-gtts>=2.5
+ultralytics>=8.4          # YOLO26 object detection (also installs PyTorch)
+pytesseract>=0.3.10       # OCR; needs the Tesseract program installed separately
 requests>=2.31
+httpx>=0.27               # talks to the local AI (Ollama)
 cachetools>=5.3
 
-# Offline translation (IndicTrans2) — optional, ~1 GB model download on first use
-transformers>=4.44,<5
+# --- Cloud services (optional, used when no local AI / offline voice is available) ---
+google-genai>=1.0         # Google Gemini
+gtts>=2.5                 # Google text-to-speech
+
+# --- Local / offline AI ---
+transformers>=4.44,<5     # IndicTrans2 translation + MMS-TTS offline voices
 sentencepiece>=0.2
 huggingface_hub>=0.24
-
-# Fully local mode (optional): speech recognition. The local AI uses Ollama (https://ollama.com),
-# installed separately: `ollama pull gemma3:4b`.
-faster-whisper>=1.1
+faster-whisper>=1.1       # speech recognition (Whisper)
+# The local vision AI runs in Ollama (https://ollama.com), installed separately:
+#   ollama pull gemma3:4b
 
 # --- API (api/) ---
 fastapi>=0.115
